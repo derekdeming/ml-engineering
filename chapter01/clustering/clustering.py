@@ -74,3 +74,32 @@ def plt_cluster_results(data, labels, core_samples_mask, n_clusters):
     plt.ylabel('Standard scaled ride time')
     plt.title('estmated num of clusters: %d' % n_clusters)
     plt.savefig('taxi-rides.png')
+
+def cluster_label(data, create_show_plot=True):
+    data= StandardScaler().fit_transform(data)
+    db = DBSCAN(eps=0.3, min_samples=10).fit(data)
+    
+    # find the labels from clustering
+    core_samp_mask = np.zeros_like(db.labels_, dtype=bool)
+    core_samp_mask[db.core_sample_indices_] = True 
+    labels = db.labels_
+    
+    # num of clusters in labels (ignoring noise if present)
+    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+    n_noise_ = list(labels).count(-1)
+    
+    print('estimated num of clusters: %d' % n_clusters_)
+    print('estimated num of noise points: %d' %  n_noise_)
+    print('silhouette coefficient: %0.3f' % metrics.silhouette_score(data, labels))
+    
+    run_metadata = {
+        'num_clusters': n_clusters_,
+        'num_noise_points': n_noise_,
+        'silhouette_coefficient': metrics.silhouette_score(data, labels),
+        'labels': labels
+    }
+    if create_show_plot:
+        plt_cluster_results(data, labels, core_samp_mask, n_clusters_)
+    else: 
+        pass
+    return run_metadata
