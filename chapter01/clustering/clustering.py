@@ -103,3 +103,24 @@ def cluster_label(data, create_show_plot=True):
     else: 
         pass
     return run_metadata
+
+if __name__ == "__main__": 
+    import os
+    file_path = 'taxi-rides.csv'
+    if os.path.exists(file_path):
+        df = pd.read_csv(file_path)
+    else:
+        logging.info('simulating ride data')
+        df = sim_ride_data()
+        df.to_csv(file_path, index=False )
+        
+    # some cool plots 
+    plot = df[['ride_dist', 'ride_time']]
+    logging.info('clustering and labeling')
+    
+    results = cluster_label(plot, create_show_plot=True)
+    df['label'] = results['labels']
+    
+    #  output to json 
+    logging.info('output to json')
+    df.to_json('taxi-rides-labeled.json', orient='records')
